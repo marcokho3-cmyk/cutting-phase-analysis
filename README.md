@@ -61,6 +61,17 @@ This project includes:
 - Calorie target was exceeded on **78.6%** of logged days.
 - Average daily steps were **12,303**, supporting a relatively high activity level during the cut.
 
+## Sample Visuals
+
+### Daily Weight vs Trend Weight
+![Daily Weight vs Trend Weight](images/weight_trend.png)
+
+### Estimated Daily Calorie Deficit
+![Estimated Daily Calorie Deficit](images/calorie_deficit.png)
+
+### Weekly Average Weight vs Trend Weight
+![Weekly Average Weight vs Trend Weight](images/weekly_averages.png)
+
 ## Limitations
 - Some days had incomplete nutrition or activity logging.
 - Incomplete edge weeks were excluded from parts of the weekly average analysis to avoid distorted comparisons.
