@@ -6,7 +6,7 @@ import streamlit as st
 
 
 DATA_PATH = Path("data/processed/processed_cut_data.csv")
-
+PREDICTIONS_PATH = Path("data/processed/model_predictions.csv")
 
 st.set_page_config(
     page_title="Cutting Phase Analytics Dashboard",
@@ -39,9 +39,14 @@ def load_data():
 
     return df
 
+@st.cache_data
+def load_predictions():
+    predictions_df = pd.read_csv(PREDICTIONS_PATH)
+    predictions_df["date"] = pd.to_datetime(predictions_df["date"])
+    return predictions_df
 
 df = load_data()
-
+predictions_df = load_predictions()
 
 st.title("Cutting Phase Analytics Dashboard")
 
@@ -97,13 +102,14 @@ calorie_exceed_rate = filtered_df["Exceeded Calorie Target"].mean() * 100
 
 
 # Tabs
-overview_tab, nutrition_tab, weight_tab, activity_tab, weekly_tab = st.tabs(
+overview_tab, nutrition_tab, weight_tab, activity_tab, weekly_tab, ml_tab = st.tabs(
     [
         "Overview",
         "Nutrition",
         "Weight Progress",
         "Activity & Deficit",
-        "Weekly Summary"
+        "Weekly Summary",
+        "ML Prediction"
     ]
 )
 
@@ -359,3 +365,59 @@ with weekly_tab:
     )
 
     st.plotly_chart(fig_weekly_deficit, use_container_width=True)
+
+with ml_tab:
+    st.subheader("Machine Learning Prediction")
+
+    st.write(
+        """
+        This section compares actual next-day trend weight with predictions from simple
+        regression models. Because the dataset is small, this model should be interpreted
+        as an exploratory extension rather than a production-level prediction system.
+        """
+    )
+
+    best_model_name = predictions_df["best_model_name"].iloc[0]
+
+    st.info(
+        f"""
+        Best model selected from the training script: **{best_model_name}**.
+        The model predicts next-day trend weight using nutrition, expenditure,
+        activity, and current trend weight features.
+        """
+    )
+
+    fig_predictions = px.line(
+        predictions_df,
+        x="date",
+        y=[
+            "actual_next_day_trend_weight",
+            "baseline_prediction",
+            "linear_regression_prediction",
+            "random_forest_prediction",
+            "best_model_prediction"
+        ],
+        title="Actual vs Predicted Next-Day Trend Weight",
+        labels={
+            "value": "Trend Weight (kg)",
+            "date": "Date",
+            "variable": "Prediction Type"
+        }
+    )
+
+    st.plotly_chart(fig_predictions, use_container_width=True)
+
+    predictions_display = predictions_df.copy()
+    numeric_columns = [
+        "trend_weight_kg",
+        "actual_next_day_trend_weight",
+        "baseline_prediction",
+        "linear_regression_prediction",
+        "random_forest_prediction",
+        "best_model_prediction"
+    ]
+
+    for column in numeric_columns:
+        predictions_display[column] = predictions_display[column].round(3)
+
+    st.dataframe(predictions_display, use_container_width=True)
