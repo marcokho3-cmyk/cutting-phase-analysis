@@ -394,7 +394,7 @@ with ml_tab:
         "trend_weight_kg": "Current Trend Weight",
         "actual_next_day_trend_weight": "Actual Next-Day Trend Weight",
         "baseline_prediction": "Baseline Prediction",
-        "linear_regression_prediction": "Linear Regression Prediction",
+        "_prediction": "Linear Regression Prediction",
         "random_forest_prediction": "Random Forest Prediction",
         "best_model_prediction": "Best Model Prediction",
         "best_model_name": "Best Model"
