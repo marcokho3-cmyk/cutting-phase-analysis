@@ -378,43 +378,79 @@ with ml_tab:
     )
 
     best_model_name = predictions_df["best_model_name"].iloc[0]
+    model_name_display = best_model_name.replace("_", " ").title()
 
     st.info(
         f"""
-        Best model selected from the training script: **{best_model_name}**.
+        Best model selected from the training script: **{model_name_display}**.
         The model predicts next-day trend weight using nutrition, expenditure,
         activity, and current trend weight features.
         """
     )
 
+    # Rename columns for cleaner chart labels
+    ml_chart_df = predictions_df.rename(columns={
+        "date": "Date",
+        "trend_weight_kg": "Current Trend Weight",
+        "actual_next_day_trend_weight": "Actual Next-Day Trend Weight",
+        "baseline_prediction": "Baseline Prediction",
+        "linear_regression_prediction": "Linear Regression Prediction",
+        "random_forest_prediction": "Random Forest Prediction",
+        "best_model_prediction": "Best Model Prediction",
+        "best_model_name": "Best Model"
+    })
+
+    show_all_models = st.checkbox(
+        "Show all model predictions",
+        value=False
+    )
+
+    if show_all_models:
+        prediction_columns = [
+            "Actual Next-Day Trend Weight",
+            "Baseline Prediction",
+            "Linear Regression Prediction",
+            "Random Forest Prediction"
+        ]
+    else:
+        prediction_columns = [
+            "Actual Next-Day Trend Weight",
+            "Baseline Prediction",
+            "Best Model Prediction"
+        ]
+
     fig_predictions = px.line(
-        predictions_df,
-        x="date",
-        y=[
-            "actual_next_day_trend_weight",
-            "baseline_prediction",
-            "linear_regression_prediction",
-            "random_forest_prediction",
-            "best_model_prediction"
-        ],
+        ml_chart_df,
+        x="Date",
+        y=prediction_columns,
         title="Actual vs Predicted Next-Day Trend Weight",
         labels={
             "value": "Trend Weight (kg)",
-            "date": "Date",
+            "Date": "Date",
             "variable": "Prediction Type"
         }
     )
 
     st.plotly_chart(fig_predictions, use_container_width=True)
 
-    predictions_display = predictions_df.copy()
+    st.caption(
+        """
+        The default chart shows the actual values, a simple baseline, and the best selected model.
+        Use the checkbox to compare the individual trained models. When the best model is Linear
+        Regression, the Best Model Prediction would overlap with the Linear Regression line, so it
+        is hidden in the full comparison view.
+        """
+    )
+
+    predictions_display = ml_chart_df.copy()
+
     numeric_columns = [
-        "trend_weight_kg",
-        "actual_next_day_trend_weight",
-        "baseline_prediction",
-        "linear_regression_prediction",
-        "random_forest_prediction",
-        "best_model_prediction"
+        "Current Trend Weight",
+        "Actual Next-Day Trend Weight",
+        "Baseline Prediction",
+        "Linear Regression Prediction",
+        "Random Forest Prediction",
+        "Best Model Prediction"
     ]
 
     for column in numeric_columns:
